@@ -6,6 +6,8 @@ group 'org.example'
 version '1.0-SNAPSHOT'
 
 repositories {
+    def currentJvm = org.gradle.internal.jvm.Jvm.current();
+    println currentJvm;
     mavenCentral()
 }
 
