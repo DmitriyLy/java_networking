@@ -10,4 +10,9 @@ class UtilsTest {
     void getPortNumber() {
         assertEquals(1881, Utils.getPortNumber());
     }
+
+    @Test
+    void getServerBacklogSize() {
+        assertEquals(100, Utils.getServerBacklogSize());
+    }
 }

@@ -9,6 +9,10 @@ public class Utils {
         return Integer.parseInt(loadProperties().getProperty("main.port"));
     }
 
+    public static int getServerBacklogSize() {
+        return Integer.parseInt(loadProperties().getProperty("server.backlog.size"));
+    }
+
     private static Properties loadProperties() {
         try (var input = Utils.class.getClassLoader().getResourceAsStream("chat_configuration.properties")) {
             Properties properties = new Properties();

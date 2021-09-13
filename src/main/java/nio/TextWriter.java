@@ -39,7 +39,7 @@ public class TextWriter {
         }
 
         bufferedReader.close();
-        System.out.println(new String(byteArrayOutputStream.toByteArray()));
+        System.out.println(byteArrayOutputStream.toString(StandardCharsets.UTF_8));
 
     }
 }
