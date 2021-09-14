@@ -2,6 +2,7 @@ package console_chat.server;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class ClientConnection implements Runnable {
     private final Socket socket;
@@ -26,6 +27,18 @@ public class ClientConnection implements Runnable {
 
             closeConnection();
 
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendMessage(String message) {
+        try {
+            if (!socket.isClosed()) {
+                OutputStream outputStream = socket.getOutputStream();
+                outputStream.write(message.getBytes(StandardCharsets.UTF_8));
+                outputStream.write("\n".getBytes(StandardCharsets.UTF_8));
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

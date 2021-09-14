@@ -1,6 +1,6 @@
 package console_chat.server;
 
-import console_chat.Utils;
+import console_chat.common.Utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,9 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Server {
-    private static final String EXIT_COMMAND = "exit()";
+import static console_chat.common.Constants.EXIT_COMMAND;
 
+public class Server {
     private final AtomicBoolean isStopped = new AtomicBoolean(false);
     private final AtomicLong counter = new AtomicLong(0);
     private final Map<Long, ClientConnection> activeConnections = new ConcurrentHashMap<>();
@@ -52,6 +52,7 @@ public class Server {
                     String command = bufferedReader.readLine();
                     if (EXIT_COMMAND.equals(command)) {
                         isStopped.set(true);
+                        closeActiveConnections();
                         fakeConnection();
                     }
                 } catch (IOException e) {
@@ -92,13 +93,14 @@ public class Server {
         new Thread(clientConnection).start();
         activeConnections.put(number, clientConnection);
         System.out.println(String.format("Connection '%s' accepted.", number));
+        clientConnection.sendMessage(String.format("Connection number: %s", number));
     }
 
     private void initConnectionCleanUp() {
         new Thread(() -> {
             while (!isStopped.get()) {
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -122,6 +124,13 @@ public class Server {
             isStopped.set(true);
             System.out.println("\nTerminating server...\n");
         }));
+    }
+
+    private void closeActiveConnections() {
+        activeConnections.entrySet()
+                .stream()
+                .map(Map.Entry::getValue)
+                .forEach(ClientConnection::closeConnection);
     }
 }
 

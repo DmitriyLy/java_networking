@@ -1,4 +1,4 @@
-package console_chat;
+package console_chat.common;
 
 import java.io.IOException;
 import java.util.Properties;
