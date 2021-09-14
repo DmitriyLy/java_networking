@@ -7,10 +7,12 @@ import java.nio.charset.StandardCharsets;
 public class ClientConnection implements Runnable {
     private final Socket socket;
     private final Long number;
+    private final Server server;
 
-    public ClientConnection(Socket socket, Long number) {
+    public ClientConnection(Socket socket, Long number, Server server) {
         this.socket = socket;
         this.number = number;
+        this.server = server;
     }
 
     @Override
@@ -22,7 +24,8 @@ public class ClientConnection implements Runnable {
             String message = bufferedReader.readLine();
 
             while (message != null) {
-
+                server.broadcastMessage(message, number);
+                message = bufferedReader.readLine();
             }
 
             closeConnection();
@@ -35,9 +38,11 @@ public class ClientConnection implements Runnable {
     public void sendMessage(String message) {
         try {
             if (!socket.isClosed()) {
+                if (!message.endsWith("\n")) {
+                    message = message + "\n";
+                }
                 OutputStream outputStream = socket.getOutputStream();
                 outputStream.write(message.getBytes(StandardCharsets.UTF_8));
-                outputStream.write("\n".getBytes(StandardCharsets.UTF_8));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

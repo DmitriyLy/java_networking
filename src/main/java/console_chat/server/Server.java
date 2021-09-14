@@ -89,7 +89,7 @@ public class Server {
 
     private void processAcceptedConnection(Socket socket) {
         long number = counter.incrementAndGet();
-        var clientConnection = new ClientConnection(socket, number);
+        var clientConnection = new ClientConnection(socket, number, this);
         new Thread(clientConnection).start();
         activeConnections.put(number, clientConnection);
         System.out.println(String.format("Connection '%s' accepted.", number));
@@ -131,6 +131,19 @@ public class Server {
                 .stream()
                 .map(Map.Entry::getValue)
                 .forEach(ClientConnection::closeConnection);
+    }
+
+    public synchronized void broadcastMessage(String input, long connectionNumber) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(String.format("connection %s >>> ", connectionNumber));
+        stringBuilder.append(input);
+
+        String message = stringBuilder.toString();
+
+        activeConnections.entrySet().stream()
+                .filter(entry -> !entry.getKey().equals(connectionNumber) && !entry.getValue().isClosed())
+                .map(Map.Entry::getValue)
+                .forEach(connection -> connection.sendMessage(message));
     }
 }
 

@@ -5,6 +5,7 @@ import console_chat.common.Utils;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Client {
@@ -73,7 +74,17 @@ public class Client {
     }
 
     private void sendToServer(String message) {
-
+        try {
+            if (!socket.isClosed()) {
+                if (!message.endsWith("\n")) {
+                    message = message + "\n";
+                }
+                OutputStream outputStream = socket.getOutputStream();
+                outputStream.write(message.getBytes(StandardCharsets.UTF_8));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Thread initInputMessageListener() {
