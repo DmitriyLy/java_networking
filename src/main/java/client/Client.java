@@ -33,6 +33,7 @@ public class Client {
                 SocketChannel socketChannel = SocketChannel.open();
                 socketChannel.configureBlocking(false);
                 socketChannel.connect(new InetSocketAddress("localhost", 9999));
+                ByteBuffer readByteBuffer = ByteBuffer.allocate(48);
 
                 while (!socketChannel.finishConnect()) {
                     Thread.sleep(100);
@@ -43,21 +44,22 @@ public class Client {
 
                     synchronized (messageQueue) {
                         while (!messageQueue.isEmpty()) {
-                            ByteBuffer byteBuffer = ByteBuffer.wrap(messageQueue.poll().getBytes(StandardCharsets.UTF_8));
+                            ByteBuffer byteBuffer = ByteBuffer.wrap(convertMessage(getMessageFromQueue()));
                             socketChannel.write(byteBuffer);
-                            //byteBuffer.clear();
+                            if (byteBuffer.remaining() == 0) {
+                                byteBuffer.clear();
+                            }
                         }
                     }
 
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(48);
                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-                    int bytesRead = socketChannel.read(byteBuffer);
+                    int bytesRead = socketChannel.read(readByteBuffer);
 
                     while (bytesRead > 0) {
-                        byteBuffer.flip();
-                        byteArrayOutputStream.writeBytes(byteBuffer.array());
-                        bytesRead = socketChannel.read(byteBuffer);
+                        readByteBuffer.flip();
+                        byteArrayOutputStream.writeBytes(readByteBuffer.array());
+                        bytesRead = socketChannel.read(readByteBuffer);
                     }
 
                     if (byteArrayOutputStream.size() > 0) {
@@ -69,6 +71,9 @@ public class Client {
                 }
 
                 socketChannel.close();
+                if (readByteBuffer.remaining() == 0) {
+                    readByteBuffer.clear();
+                }
 
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
@@ -110,5 +115,9 @@ public class Client {
 
     private synchronized String getMessageFromQueue() {
         return messageQueue.poll();
+    }
+
+    private byte[] convertMessage(String message) {
+        return (message + "\r\n").getBytes(StandardCharsets.UTF_8);
     }
 }
