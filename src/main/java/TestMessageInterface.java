@@ -1,4 +1,4 @@
-public interface TestInterface {
+public interface TestMessageInterface {
 
     String getMessage();
 
